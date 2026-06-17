@@ -8,15 +8,15 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
-    --bg:#0f1419; --panel:#1a2027; --panel2:#232b34;
-    --line:#2e3a45; --txt:#eef2f5; --sub:#9fb0bd;
-    --accent:#ff5a3c; --accent2:#ffb02e; --start:#1f8f5f; --route:#ff5a3c;
+    --bg:#eef1f5; --panel:#ffffff; --panel2:#e6eaf0;
+    --line:#d3dae2; --txt:#14202b; --sub:#556675;
+    --accent:#e8431f; --accent2:#b9650a; --start:#15794f; --route:#e8431f;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;}
   body{padding-bottom:env(safe-area-inset-bottom);}
-  header{position:sticky;top:0;z-index:1200;background:linear-gradient(180deg,#161c22,#10151a);
+  header{position:sticky;top:0;z-index:1200;background:linear-gradient(180deg,#ffffff,#f3f6f9);
     padding:14px 16px calc(12px + env(safe-area-inset-top)) 16px;border-bottom:1px solid var(--line);
     padding-top:max(14px,env(safe-area-inset-top));}
   header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.4px;}
@@ -28,15 +28,16 @@
   ul.list{list-style:none;margin:0;padding:8px 12px 28px;}
   li.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;
     padding:13px 14px;margin:9px 0;display:flex;gap:13px;align-items:center;
-    cursor:pointer;transition:transform .08s ease,background .15s ease;}
+    cursor:pointer;box-shadow:0 1px 3px rgba(20,32,43,.08);
+    transition:transform .08s ease,background .15s ease;}
   li.card:active{transform:scale(.985);background:var(--panel2);}
   .num{flex:0 0 auto;width:34px;height:34px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;
     color:#fff;background:var(--accent);box-shadow:0 2px 8px rgba(255,90,60,.35);}
   .num.start{background:var(--start);box-shadow:0 2px 8px rgba(31,143,95,.4);font-size:12px;}
   .info{flex:1;min-width:0;}
-  .info .nm{font-size:15px;font-weight:700;letter-spacing:-.3px;line-height:1.25;}
-  .info .ad{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.35;}
+  .info .nm{font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.25;}
+  .info .ad{font-size:13px;color:#3f4d59;margin-top:4px;line-height:1.35;font-weight:500;}
   .info .tag{display:inline-block;margin-top:6px;font-size:10.5px;color:var(--accent2);
     background:rgba(255,176,46,.12);border:1px solid rgba(255,176,46,.25);
     padding:2px 7px;border-radius:6px;}
@@ -118,21 +119,21 @@ function openTmap(p){
 // ---- 지도 ----
 const map = L.map('map',{zoomControl:true, attributionControl:false})
   .setView([35.16,129.07], 11);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
   maxZoom:19, subdomains:'abcd'
 }).addTo(map);
 
-// 경로 폴리라인
+// 경로 폴리라인 (밝은 지도에서 잘 보이도록 흰 외곽선 + 진한 주황)
 const line = places.map(p=>[p.lat,p.lng]);
-L.polyline(line,{color:'#ff5a3c',weight:4,opacity:.85,dashArray:'1,9',lineCap:'round'}).addTo(map);
-L.polyline(line,{color:'#ff5a3c',weight:2.5,opacity:.55}).addTo(map);
+L.polyline(line,{color:'#ffffff',weight:7,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map);
+L.polyline(line,{color:'#e8431f',weight:4,opacity:1,lineCap:'round',lineJoin:'round'}).addTo(map);
 
 // 마커
 const bounds = [];
 places.forEach(p=>{
   bounds.push([p.lat,p.lng]);
   const isStart = p.order===0;
-  const color = isStart ? '#1f8f5f' : '#ff5a3c';
+  const color = isStart ? '#15794f' : '#e8431f';
   const label = isStart ? 'S' : p.order;
   const icon = L.divIcon({
     className:'',
