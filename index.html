@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>부산 방문 루트 · T맵 연동</title>
+<title>창원 방문 루트 · T맵 연동</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -17,11 +17,21 @@
     font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;}
   body{padding-bottom:env(safe-area-inset-bottom);}
   header{position:sticky;top:0;z-index:1200;background:linear-gradient(180deg,#ffffff,#f3f6f9);
-    padding:14px 16px calc(12px + env(safe-area-inset-top)) 16px;border-bottom:1px solid var(--line);
+    padding:14px 16px 12px 16px;border-bottom:1px solid var(--line);
     padding-top:max(14px,env(safe-area-inset-top));}
   header h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.4px;}
   header p{margin:3px 0 0;font-size:12px;color:var(--sub);}
-  #map{width:100%;height:46vh;min-height:280px;background:#222;}
+  .map-wrap{position:relative;}
+  #map{width:100%;height:46vh;min-height:280px;background:#ddd;}
+  #locBtn{position:absolute;right:12px;bottom:14px;z-index:1100;
+    width:46px;height:46px;border-radius:50%;border:none;background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  #locBtn svg{width:24px;height:24px;}
+  #locBtn.active svg{stroke:#2b66ff;}
+  #locBtn.loading{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .me-dot{width:18px;height:18px;border-radius:50%;background:#2b66ff;
+    border:3px solid #fff;box-shadow:0 0 0 4px rgba(43,102,255,.3),0 1px 4px rgba(0,0,0,.4);}
   .hint{font-size:11.5px;color:var(--sub);padding:9px 16px;background:var(--panel);
     border-bottom:1px solid var(--line);display:flex;gap:6px;align-items:center;}
   .hint b{color:var(--accent2);}
@@ -33,14 +43,16 @@
   li.card:active{transform:scale(.985);background:var(--panel2);}
   .num{flex:0 0 auto;width:34px;height:34px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;
-    color:#fff;background:var(--accent);box-shadow:0 2px 8px rgba(255,90,60,.35);}
-  .num.start{background:var(--start);box-shadow:0 2px 8px rgba(31,143,95,.4);font-size:12px;}
+    color:#fff;background:var(--accent);box-shadow:0 2px 8px rgba(232,67,31,.35);}
+  .num.start{background:var(--start);box-shadow:0 2px 8px rgba(21,121,79,.4);font-size:12px;}
   .info{flex:1;min-width:0;}
   .info .nm{font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.25;}
   .info .ad{font-size:13px;color:#3f4d59;margin-top:4px;line-height:1.35;font-weight:500;}
   .info .tag{display:inline-block;margin-top:6px;font-size:10.5px;color:var(--accent2);
-    background:rgba(255,176,46,.12);border:1px solid rgba(255,176,46,.25);
+    background:rgba(185,101,10,.1);border:1px solid rgba(185,101,10,.25);
     padding:2px 7px;border-radius:6px;}
+  .info .approx{display:inline-block;margin-top:6px;margin-left:5px;font-size:10.5px;color:#8a5a00;
+    background:rgba(255,193,7,.18);border:1px solid rgba(255,193,7,.5);padding:2px 7px;border-radius:6px;}
   .go{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;
     background:#2b66ff;color:#fff;border:none;border-radius:12px;padding:9px 11px;
     font-weight:800;font-size:12px;cursor:pointer;min-width:54px;}
@@ -49,26 +61,15 @@
   .leaflet-div-icon{background:transparent;border:none;}
   .pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
     display:flex;align-items:center;justify-content:center;
-    box-shadow:0 2px 6px rgba(0,0,0,.5);border:2px solid #fff;}
+    box-shadow:0 2px 6px rgba(0,0,0,.45);border:2px solid #fff;}
   .pin span{transform:rotate(45deg);color:#fff;font-weight:800;font-size:13px;}
   .footer{text-align:center;font-size:11px;color:var(--sub);padding:4px 16px 22px;}
-  #locBtn{position:absolute;right:12px;bottom:14px;z-index:1100;
-    width:46px;height:46px;border-radius:50%;border:none;background:#fff;
-    box-shadow:0 2px 10px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;
-    cursor:pointer;}
-  #locBtn svg{width:24px;height:24px;}
-  #locBtn.active svg{stroke:#2b66ff;}
-  #locBtn.loading{animation:spin 1s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .me-dot{width:18px;height:18px;border-radius:50%;background:#2b66ff;
-    border:3px solid #fff;box-shadow:0 0 0 4px rgba(43,102,255,.3),0 1px 4px rgba(0,0,0,.4);}
-  .map-wrap{position:relative;}
 </style>
 </head>
 <body>
 <header>
-  <h1>부산 방문 루트 · 총 9곳</h1>
-  <p>김해 삼방동 출발 → 원도심 → 남구 → 해운대 → 기장 (왕복 최소화 동선)</p>
+  <h1>창원 방문 루트 · 총 12곳</h1>
+  <p>김해 삼방동 출발 → 성산구 상남 → 의창구(봉림·도계·중동) → 진해구</p>
 </header>
 <div class="map-wrap">
   <div id="map"></div>
@@ -78,24 +79,26 @@
 </div>
 <div class="hint">📍 지도 핀 또는 아래 카드를 <b>탭</b>하면 해당 목적지로 <b>T맵 길안내</b>가 실행됩니다.</div>
 <ul class="list" id="list"></ul>
-<div class="footer">우측 하단 ◎ 버튼으로 내 위치 표시 (위치 권한 허용 필요) · T맵 미설치 시 스토어로 이동 · 좌표는 도로명주소 기준 근사치</div>
+<div class="footer">≈ 표시는 정확한 좌표를 못 찾아 인근으로 잡은 곳(도착 후 확인 권장) · 우측 하단 ◎ 버튼으로 내 위치 표시 · T맵 미설치 시 스토어 이동</div>
 
 <script>
-// 방문 순서 데이터 (order=0 은 출발지)
 const places = [
   {order:0, name:"출발 · 김해 삼방동 190-2", addr:"경남 김해시 삼방동 190-2", cat:"출발지", lat:35.2457937, lng:128.9096489},
-  {order:1, name:"비프광장", addr:"부산 중구 중구로5번길 14", cat:"휴게음식점", lat:35.0972807, lng:129.0291291},
-  {order:2, name:"남항복권", addr:"부산 영도구 남항로 11", cat:"복권판매점", lat:35.0888, lng:129.0403},
-  {order:3, name:"나포리충무김밥&황금복권", addr:"부산 남구 못골로 36 1층", cat:"휴게음식점", lat:35.1361, lng:129.0888},
-  {order:4, name:"스마일찹쌀꽈배기", addr:"부산 남구 못골로 48", cat:"제과·간식", lat:35.1357011, lng:129.0875667},
-  {order:5, name:"용호상회 1976 광안1호점", addr:"부산 수영구 광안해변로277번길 3 1층", cat:"휴게음식점", lat:35.1559953, lng:129.1240591},
-  {order:6, name:"해운대우동로또복권방", addr:"부산 해운대구 해운대로383번길 40", cat:"복권판매점", lat:35.1697, lng:129.1376},
-  {order:7, name:"동행복권153다이룸", addr:"부산 해운대구 해운대로 381-1 1층", cat:"복권판매점", lat:35.1695078, lng:129.1383489},
-  {order:8, name:"해르트 로또", addr:"부산 해운대구 우동1로 31", cat:"복권·베이커리", lat:35.1643448, lng:129.1568227},
-  {order:9, name:"기장슈퍼", addr:"부산 기장군 기장읍 차성동로 69", cat:"슈퍼·복권", lat:35.2439, lng:129.2165295}
+  {order:1, name:"흥진슈퍼", addr:"경남 창원시 성산구 상남로192번길 37", cat:"슈퍼", lat:35.2272502, lng:128.6910888},
+  {order:2, name:"나들가게 상남슈퍼체인", addr:"경남 창원시 성산구 마디미로 28 상남시장", cat:"슈퍼·나들가게", lat:35.2222, lng:128.6837, approx:true},
+  {order:3, name:"대발이복권방", addr:"경남 창원시 성산구 원이대로579번길 10 1층 7호", cat:"복권방", lat:35.2240, lng:128.6810, approx:true},
+  {order:4, name:"경창상가매표소", addr:"경남 창원시 성산구 상남로 67 경창종합상가", cat:"복권·매표", lat:35.2201813, lng:128.6792608},
+  {order:5, name:"제비씨앗복권", addr:"경남 창원시 성산구 중앙대로 95 기산파라다이스상가 1층 121호", cat:"복권", lat:35.2236484, lng:128.6788955, approx:true},
+  {order:6, name:"우리동네꼬배기", addr:"경남 창원시 의창구 태복산로 321 (봉림동 713-7)", cat:"간식·꽈배기", lat:35.250331, lng:128.6679748},
+  {order:7, name:"황금두꺼비복권방", addr:"경남 창원시 의창구 도계로60번길 9-19", cat:"복권방", lat:35.2569, lng:128.6389, approx:true},
+  {order:8, name:"나들가게도계할인마트", addr:"경남 창원시 의창구 원이대로55번길 8-4 들국화횟집", cat:"마트·나들가게", lat:35.2575933, lng:128.6351477},
+  {order:9, name:"로또 중동유니스타점", addr:"경남 창원시 의창구 중동중앙로 95", cat:"로또", lat:35.2594456, lng:128.6286971},
+  {order:10, name:"로또플렉스 어반브릭스점", addr:"경남 창원시 의창구 중동중앙로 47 어반브릭스 스트리트몰 1층 1103호", cat:"로또", lat:35.2564865, lng:128.6252181},
+  {order:11, name:"나눔로또판매점", addr:"경남 창원시 진해구 충장로 132-1", cat:"로또", lat:35.1492, lng:128.6618, approx:true},
+  {order:12, name:"로또복권", addr:"경남 창원시 진해구 충장로 116 (주폰)", cat:"복권", lat:35.1488, lng:128.6625, approx:true}
 ];
 
-// T맵 길안내 실행 (iOS/Android 공통: goalname/goalx(경도)/goaly(위도))
+// T맵 길안내 실행 (iOS/Android 공통)
 function openTmap(p){
   const name = encodeURIComponent(p.name.replace(/^출발 · /,''));
   const scheme = `tmap://route?goalname=${name}&goalx=${p.lng}&goaly=${p.lat}`;
@@ -103,7 +106,6 @@ function openTmap(p){
   const onHide = ()=>{ moved = true; };
   document.addEventListener("visibilitychange", onHide, {once:true});
   window.location.href = scheme;
-  // 1.4초 내 앱 전환이 없으면 스토어로 폴백
   setTimeout(()=>{
     document.removeEventListener("visibilitychange", onHide);
     if(moved || document.hidden) return;
@@ -117,13 +119,12 @@ function openTmap(p){
 }
 
 // ---- 지도 ----
-const map = L.map('map',{zoomControl:true, attributionControl:false})
-  .setView([35.16,129.07], 11);
+const map = L.map('map',{zoomControl:true, attributionControl:false}).setView([35.21,128.78], 11);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
   maxZoom:19, subdomains:'abcd'
 }).addTo(map);
 
-// 경로 폴리라인 (밝은 지도에서 잘 보이도록 흰 외곽선 + 진한 주황)
+// 경로 폴리라인 (흰 외곽선 + 진한 주황)
 const line = places.map(p=>[p.lat,p.lng]);
 L.polyline(line,{color:'#ffffff',weight:7,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(map);
 L.polyline(line,{color:'#e8431f',weight:4,opacity:1,lineCap:'round',lineJoin:'round'}).addTo(map);
@@ -135,13 +136,11 @@ places.forEach(p=>{
   const isStart = p.order===0;
   const color = isStart ? '#15794f' : '#e8431f';
   const label = isStart ? 'S' : p.order;
-  const icon = L.divIcon({
-    className:'',
+  const icon = L.divIcon({className:'',
     html:`<div class="pin" style="background:${color}"><span>${label}</span></div>`,
-    iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-28]
-  });
+    iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-28]});
   const m = L.marker([p.lat,p.lng],{icon}).addTo(map);
-  m.bindPopup(`<div style="font-weight:800;font-size:14px;margin-bottom:2px">${isStart?'★ 출발지':p.order+'. '+p.name}</div>
+  m.bindPopup(`<div style="font-weight:800;font-size:14px;margin-bottom:2px">${isStart?'★ 출발지':p.order+'. '+p.name}${p.approx?' <span style="color:#b58300">≈</span>':''}</div>
     <div style="font-size:12px;color:#555;margin-bottom:8px">${p.addr}</div>
     ${isStart?'':`<button onclick='window.__go(${p.order})' style="width:100%;background:#2b66ff;color:#fff;border:none;border-radius:8px;padding:8px;font-weight:800;font-size:13px">🚗 T맵으로 길안내</button>`}`);
 });
@@ -149,22 +148,17 @@ map.fitBounds(bounds,{padding:[40,40]});
 
 window.__go = function(order){ openTmap(places.find(p=>p.order===order)); };
 
-// ---- 내 위치 (디바이스 현재 위치) ----
+// ---- 내 위치 ----
 let meMarker=null, meAccuracy=null, watchId=null, firstFix=true;
 const locBtn = document.getElementById('locBtn');
-
 function showMe(pos){
   const {latitude:lat, longitude:lng, accuracy:acc} = pos.coords;
-  locBtn.classList.remove('loading');
-  locBtn.classList.add('active');
+  locBtn.classList.remove('loading'); locBtn.classList.add('active');
   const icon = L.divIcon({className:'', html:'<div class="me-dot"></div>', iconSize:[18,18], iconAnchor:[9,9]});
   if(!meMarker){
     meMarker = L.marker([lat,lng],{icon, zIndexOffset:1000}).addTo(map);
     meAccuracy = L.circle([lat,lng],{radius:acc, color:'#2b66ff', weight:1, fillColor:'#2b66ff', fillOpacity:.12}).addTo(map);
-  }else{
-    meMarker.setLatLng([lat,lng]);
-    meAccuracy.setLatLng([lat,lng]).setRadius(acc);
-  }
+  }else{ meMarker.setLatLng([lat,lng]); meAccuracy.setLatLng([lat,lng]).setRadius(acc); }
   if(firstFix){ map.setView([lat,lng], 14, {animate:true}); firstFix=false; }
 }
 function locError(err){
@@ -177,18 +171,14 @@ function locError(err){
 }
 function locateMe(){
   if(!('geolocation' in navigator)){ alert("이 브라우저는 위치 기능을 지원하지 않습니다."); return; }
-  if(!window.isSecureContext){
-    alert("위치 표시는 https 주소 또는 앱에서 열었을 때만 동작합니다.\n(로컬 파일 file:// 로는 브라우저가 위치를 차단할 수 있어요)");
-  }
-  locBtn.classList.add('loading');
-  firstFix = true;
+  if(!window.isSecureContext){ alert("위치 표시는 https 주소 또는 앱에서 열었을 때만 동작합니다.\n(로컬 파일 file:// 로는 차단될 수 있어요)"); }
+  locBtn.classList.add('loading'); firstFix = true;
   navigator.geolocation.getCurrentPosition(showMe, locError, {enableHighAccuracy:true, timeout:10000, maximumAge:0});
   if(watchId!==null) navigator.geolocation.clearWatch(watchId);
   watchId = navigator.geolocation.watchPosition(showMe, locError, {enableHighAccuracy:true, timeout:15000, maximumAge:3000});
 }
 locBtn.addEventListener('click', ()=>{
-  if(meMarker){ map.setView(meMarker.getLatLng(), 15, {animate:true}); }
-  else { locateMe(); }
+  if(meMarker){ map.setView(meMarker.getLatLng(), 15, {animate:true}); } else { locateMe(); }
 });
 
 // ---- 리스트 ----
@@ -200,19 +190,16 @@ places.forEach(p=>{
   li.innerHTML = `
     <div class="num ${isStart?'start':''}">${isStart?'출발':p.order}</div>
     <div class="info">
-      <div class="nm">${isStart? p.name.replace('출발 · ','★ ')+'' : p.name}</div>
+      <div class="nm">${isStart? '★ '+p.name.replace('출발 · ','') : p.name}</div>
       <div class="ad">${p.addr}</div>
-      <span class="tag">${p.cat}</span>
+      <span class="tag">${p.cat}</span>${p.approx?'<span class="approx">≈ 위치 근사</span>':''}
     </div>
     ${isStart?'':`<button class="go" aria-label="T맵 길안내">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
       <small>T맵</small></button>`}
   `;
   if(!isStart){
-    li.addEventListener('click', ()=>{
-      map.setView([p.lat,p.lng],15,{animate:true});
-      openTmap(p);
-    });
+    li.addEventListener('click', ()=>{ map.setView([p.lat,p.lng],15,{animate:true}); openTmap(p); });
   }else{
     li.addEventListener('click', ()=> map.setView([p.lat,p.lng],13,{animate:true}));
   }
