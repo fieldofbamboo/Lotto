@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>부산 동구·부산진구 루트 · 총 5곳</title>
+<title>양산 방문 루트 · 총 16곳</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -77,8 +77,8 @@
 </head>
 <body>
 <header>
-  <h1>부산 동구·부산진구 루트 · 총 5곳</h1>
-  <p>김해 삼방동 출발 → 서면 → 범천동·동구 범일동 (최적 동선)</p>
+  <h1>양산 방문 루트 · 총 16곳</h1>
+  <p>김해 삼방동 출발 → 물금읍 → 사송 → 중부·북부동 → 상북면 (최적 동선)</p>
   <button id="resetBtn">방문 기록 초기화</button>
 </header>
 <div class="map-wrap">
@@ -103,49 +103,148 @@ const places = [
     "order": 0
   },
   {
-    "name": "경성꽈배기 시민공원서면롯데점",
-    "addr": "부산 부산진구 서면문화로 15 1층",
-    "cat": "휴게음식점",
-    "lat": 35.1588296,
-    "lng": 129.056969,
+    "name": "대복로또",
+    "addr": "경남 양산시 물금읍 청운로 46-1 101호",
+    "cat": "복권·로또",
+    "lat": 35.3078953,
+    "lng": 128.992398,
     "approx": false,
     "order": 1
   },
   {
-    "name": "시장빵집",
-    "addr": "부산 부산진구 중앙번영로20번길 26",
-    "cat": "베이커리",
-    "lat": 35.1436293,
-    "lng": 129.0612768,
+    "name": "동행복권하하로또",
+    "addr": "경남 양산시 물금읍 물금로 41 상가동 108호",
+    "cat": "복권·로또",
+    "lat": 35.3102835,
+    "lng": 128.9885136,
     "approx": false,
     "order": 2
   },
   {
-    "name": "오케이찹쌀꽈배기",
-    "addr": "부산 부산진구 골드테마길 2-14",
-    "cat": "간식·꽈배기",
-    "lat": 35.1421148,
-    "lng": 129.0603671,
+    "name": "행운로또365",
+    "addr": "경남 양산시 물금읍 황산로 459-1 1층 103호",
+    "cat": "복권·로또",
+    "lat": 35.3160808,
+    "lng": 128.9914982,
     "approx": false,
     "order": 3
   },
   {
-    "name": "돈벼락맞는곳",
-    "addr": "부산 동구 조방로49번길 18-1",
-    "cat": "복권·로또",
-    "lat": 35.1391592,
-    "lng": 129.059919,
+    "name": "카페아마떼 양산점",
+    "addr": "경남 양산시 물금읍 증산역로 135 1층 101호",
+    "cat": "휴게음식점",
+    "lat": 35.3106196,
+    "lng": 129.0052989,
     "approx": false,
     "order": 4
   },
   {
-    "name": "한국타이어 부일카서비스",
-    "addr": "부산 동구 자성로133번길 35 부일카서비스",
-    "cat": "자동차·정비",
-    "lat": 35.139999,
-    "lng": 129.063048,
+    "name": "범어로또판매점",
+    "addr": "경남 양산시 물금읍 목화로 52 1층",
+    "cat": "복권·로또",
+    "lat": 35.331535,
+    "lng": 129.0015898,
     "approx": false,
     "order": 5
+  },
+  {
+    "name": "스포츠복권방",
+    "addr": "경남 양산시 물금읍 황산로 675 비타민공인중개사",
+    "cat": "복권·로또",
+    "lat": 35.3308655,
+    "lng": 129.0067056,
+    "approx": false,
+    "order": 6
+  },
+  {
+    "name": "플러스로터리",
+    "addr": "경남 양산시 물금읍 범어로 28 101호",
+    "cat": "기타",
+    "lat": 35.3310633,
+    "lng": 129.011763,
+    "approx": false,
+    "order": 7
+  },
+  {
+    "name": "복권판매점 양산역점",
+    "addr": "경남 양산시 양산역6길 3 센트럴스위트",
+    "cat": "복권·로또",
+    "lat": 35.3378116,
+    "lng": 129.0265943,
+    "approx": false,
+    "order": 8
+  },
+  {
+    "name": "제일복권",
+    "addr": "경남 양산시 양산역2길 7 대상골드타워",
+    "cat": "복권·로또",
+    "lat": 35.3357307,
+    "lng": 129.0278333,
+    "approx": false,
+    "order": 9
+  },
+  {
+    "name": "행운복권판매점 중부동",
+    "addr": "경남 양산시 양주로 149 104호",
+    "cat": "복권·로또",
+    "lat": 35.3379728,
+    "lng": 129.0309318,
+    "approx": false,
+    "order": 10
+  },
+  {
+    "name": "사송로또",
+    "addr": "경남 양산시 동면 내송큰들로 43 1층 104호",
+    "cat": "복권·로또",
+    "lat": 35.3184,
+    "lng": 129.0679,
+    "approx": false,
+    "order": 11
+  },
+  {
+    "name": "양산복권",
+    "addr": "경남 양산시 서일동로 32",
+    "cat": "복권·로또",
+    "lat": 35.3410973,
+    "lng": 129.0371584,
+    "approx": false,
+    "order": 12
+  },
+  {
+    "name": "드림로또",
+    "addr": "경남 양산시 삼일로 73",
+    "cat": "복권·로또",
+    "lat": 35.3439601,
+    "lng": 129.0354723,
+    "approx": false,
+    "order": 13
+  },
+  {
+    "name": "스마일",
+    "addr": "경남 양산시 북안남4길 2 1층 스마일로또방",
+    "cat": "기타",
+    "lat": 35.3453942,
+    "lng": 129.0382875,
+    "approx": false,
+    "order": 14
+  },
+  {
+    "name": "호호복권",
+    "addr": "경남 양산시 상북면 양산대로 1228 1층",
+    "cat": "복권·로또",
+    "lat": 35.3787152,
+    "lng": 129.0482051,
+    "approx": false,
+    "order": 15
+  },
+  {
+    "name": "행복복권판매점",
+    "addr": "경남 양산시 상북면 반회서6길 9 행복복권판매점",
+    "cat": "복권·로또",
+    "lat": 35.4145499,
+    "lng": 129.0591975,
+    "approx": false,
+    "order": 16
   }
 ];
 
@@ -171,7 +270,7 @@ function openTmap(p){
 }
 
 // ---- 지도 ----
-const map = L.map('map',{zoomControl:true, attributionControl:false}).setView([35.16159,129.03520], 11);
+const map = L.map('map',{zoomControl:true, attributionControl:false}).setView([35.33163,129.01641], 11);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
   maxZoom:19, subdomains:'abcd'
 }).addTo(map);
