@@ -62,11 +62,13 @@
     padding:2px 7px;border-radius:6px;}
   .info .approx{display:inline-block;margin-top:6px;margin-left:5px;font-size:10.5px;color:#8a5a00;
     background:rgba(255,193,7,.18);border:1px solid rgba(255,193,7,.5);padding:2px 7px;border-radius:6px;}
-  .go{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;
-    background:#2b66ff;color:#fff;border:none;border-radius:12px;padding:9px 11px;
-    font-weight:800;font-size:12px;cursor:pointer;min-width:54px;}
-  .go svg{width:18px;height:18px;}
-  .go small{font-size:9px;font-weight:600;opacity:.85;}
+  .navbtns{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;}
+  .navbtn{display:flex;align-items:center;justify-content:center;gap:5px;border:none;border-radius:10px;
+    padding:8px 10px;font-weight:800;font-size:12px;cursor:pointer;min-width:66px;color:#fff;}
+  .navbtn:active{filter:brightness(.92);}
+  .navbtn.tmap{background:#2b66ff;}
+  .navbtn.naver{background:#03c75a;}
+  .navbtn svg{width:15px;height:15px;}
   .leaflet-div-icon{background:transparent;border:none;}
   .pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
     display:flex;align-items:center;justify-content:center;
@@ -87,9 +89,9 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path><circle cx="12" cy="12" r="8.2"></circle></svg>
   </button>
 </div>
-<div class="hint">📍 지도 핀 또는 아래 카드를 <b>탭</b>하면 해당 목적지로 <b>T맵 길안내</b>가 실행됩니다.</div>
+<div class="hint">📍 카드의 <b style="color:#2b66ff">T맵</b>·<b style="color:#03c75a">네이버</b> 버튼을 <b>탭</b>하면 그 곳으로 길안내가 시작됩니다(지도 핀도 동일).</div>
 <ul class="list" id="list"></ul>
-<div class="footer">길안내를 누른 곳은 회색 ✓(방문완료)로 바뀝니다(번호 동그라미 탭으로 수동 토글). ≈는 위치 근사 · ◎ 내 위치 · T맵 미설치 시 스토어 이동</div>
+<div class="footer">길안내를 누른 곳은 회색 ✓(방문완료)로 바뀝니다(번호 동그라미 탭으로 수동 토글). T맵/네이버 미설치 시 스토어로 이동 · ◎ 내 위치</div>
 
 <script>
 const places = [
@@ -269,7 +271,31 @@ function openTmap(p){
   }, 1400);
 }
 
-// ---- 지도 ----
+// 네이버 지도 자동차 길안내 (현재 위치 → 목적지)
+function openNaver(p){
+  setVisited(p.order, true);
+  const name = encodeURIComponent(p.name.replace(/^출발 · /,''));
+  const app = encodeURIComponent(location.hostname || 'route.web');
+  const ua = navigator.userAgent || "";
+  if(/android/i.test(ua)){
+    // 인텐트 URL: 네이버지도 미설치 시 자동으로 플레이스토어로 이동
+    window.location.href = `intent://route/car?dlat=${p.lat}&dlng=${p.lng}&dname=${name}&appname=${app}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+    return;
+  }
+  let moved = false;
+  const onHide = ()=>{ moved = true; };
+  document.addEventListener("visibilitychange", onHide, {once:true});
+  window.location.href = `nmap://route/car?dlat=${p.lat}&dlng=${p.lng}&dname=${name}&appname=${app}`;
+  setTimeout(()=>{
+    document.removeEventListener("visibilitychange", onHide);
+    if(moved || document.hidden) return;
+    if(/iPhone|iPad|iPod/i.test(ua)){
+      window.location.href = "https://apps.apple.com/kr/app/id311867728";
+    }else{
+      window.location.href = "https://play.google.com/store/apps/details?id=com.nhn.android.nmap";
+    }
+  }, 1400);
+}
 const map = L.map('map',{zoomControl:true, attributionControl:false}).setView([35.33163,129.01641], 11);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
   maxZoom:19, subdomains:'abcd'
@@ -305,11 +331,12 @@ places.forEach(p=>{
   markersByOrder[p.order] = m;
   m.bindPopup(`<div style="font-weight:800;font-size:14px;margin-bottom:2px">${isStart?'★ 출발지':p.order+'. '+p.name}${p.approx?' <span style="color:#b58300">≈</span>':''}</div>
     <div style="font-size:12px;color:#555;margin-bottom:8px">${p.addr}</div>
-    ${isStart?'':`<button onclick='window.__go(${p.order})' style="width:100%;background:#2b66ff;color:#fff;border:none;border-radius:8px;padding:8px;font-weight:800;font-size:13px">🚗 T맵으로 길안내</button>`}`);
+    ${isStart?'':`<div style="display:flex;gap:6px"><button onclick='window.__go(${p.order})' style="flex:1;background:#2b66ff;color:#fff;border:none;border-radius:8px;padding:8px;font-weight:800;font-size:13px">🚗 T맵</button><button onclick='window.__goN(${p.order})' style="flex:1;background:#03c75a;color:#fff;border:none;border-radius:8px;padding:8px;font-weight:800;font-size:13px">🟢 네이버</button></div>`}`);
 });
 map.fitBounds(bounds,{padding:[40,40]});
 
 window.__go = function(order){ openTmap(places.find(p=>p.order===order)); };
+window.__goN = function(order){ openNaver(places.find(p=>p.order===order)); };
 
 // 방문 상태 적용/토글
 function setVisited(order, on){
@@ -373,9 +400,12 @@ places.forEach(p=>{
       <div class="ad">${p.addr}</div>
       <span class="tag">${p.cat}</span>${p.approx?'<span class="approx">≈ 위치 근사</span>':''}<span class="done-badge">✓ 방문완료</span>
     </div>
-    ${isStart?'':`<button class="go" aria-label="T맵 길안내">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-      <small>T맵</small></button>`}
+    ${isStart?'':`<div class="navbtns">
+      <button class="navbtn tmap" aria-label="T맵 길안내">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>T맵</button>
+      <button class="navbtn naver" aria-label="네이버 길안내">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l6 9V4h4v16h-4l-6-9v9H5z" fill="#fff" stroke="none"></path></svg>네이버</button>
+    </div>`}
   `;
   if(!isStart){
     // 번호 원을 탭하면 방문 표시만 토글 (길안내 실행 안 함)
@@ -383,7 +413,10 @@ places.forEach(p=>{
       e.stopPropagation();
       setVisited(p.order, !visited.has(p.order));
     });
-    li.addEventListener('click', ()=>{ map.setView([p.lat,p.lng],15,{animate:true}); openTmap(p); });
+    li.querySelector('.navbtn.tmap').addEventListener('click', (e)=>{ e.stopPropagation(); openTmap(p); });
+    li.querySelector('.navbtn.naver').addEventListener('click', (e)=>{ e.stopPropagation(); openNaver(p); });
+    // 카드 본문 탭은 지도에서 해당 위치로 이동
+    li.addEventListener('click', ()=> map.setView([p.lat,p.lng],15,{animate:true}));
   }else{
     li.addEventListener('click', ()=> map.setView([p.lat,p.lng],13,{animate:true}));
   }
